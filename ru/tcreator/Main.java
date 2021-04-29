@@ -1,6 +1,8 @@
 package ru.tcreator;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.zip.*;
 import java.util.ArrayList;
 
@@ -15,13 +17,12 @@ public class Main {
         GameProgress threeSaveProgress = new GameProgress(99, 231, 90, 900.23);
         String pathSaveProgress = ROOT_PATH + "savegames" + SEPARATOR;
 
-        System.out.println(pathSaveProgress);
 
         saveGame(pathSaveProgress, oneSaveProgress);
-//        saveGame(pathSaveProgress, twoSaveProgress);
-//        saveGame(pathSaveProgress, threeSaveProgress);
+        saveGame(pathSaveProgress, twoSaveProgress);
+        saveGame(pathSaveProgress, threeSaveProgress);
 
-//        zipFiles(pathSaveProgress, pathSaveProgress + "output.zip");
+        zipFiles(pathSaveProgress, pathSaveProgress, "output.zip");
     }
 
     static public void saveGame(String path, GameProgress progress) throws IOException {
@@ -52,8 +53,8 @@ public class Main {
     }
 
     /**
-     * формирует слежующий номер файла на основе предыдущих номеров
-     * @param File[] fileList список файлов в директории
+     * формирует следующий номер файла на основе предыдущих номеров
+     * @param fileList список файлов в директории
      * @return int
      */
     public static int getNextNumber(File[] fileList) {
@@ -62,23 +63,47 @@ public class Main {
             return 1;
         }
         for (File elem: fileList) {
-            String num = elem.getName().split(".dat")[0].substring(4);
-            int intNum = Integer.parseInt(num);
-            integersList.add(intNum);
+            if(!elem.getName().contains(".zip")) {
+                String num = elem.getName().split(".dat")[0].substring(4);
+                int intNum = Integer.parseInt(num);
+                integersList.add(intNum);
+            }
+
         }
         return integersList.stream()
                 .max(Integer::compare)
                 .get() + 1;
     }
 
-    public static void zipFiles(String pathFiles, String pathToZip) {
-        try(ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(pathToZip));
-            FileInputStream fis = new FileInputStream(pathFiles)) {
-//            ZipEntry entry1 = new ZipEntry();
 
+    /**
+     * Упаковывает .dat файлы в zip архив и удаляет исходники
+     * @param pathFiles
+     * @param pathToZip
+     * @param zipName
+     * @throws IOException
+     */
+    public static void zipFiles(String pathFiles, String pathToZip, String zipName) throws IOException {
+        File path = new File(pathFiles);
+        try(ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(pathToZip + zipName))) {
+            for (String file : path.list()) {
+                if(file.contains(".dat")) {
+                    String pathFileToZip = pathFiles + file;
+                    try(FileInputStream fis = new FileInputStream(pathFileToZip)) {
+                        ZipEntry entry1 = new ZipEntry(file);
+                        zip.putNextEntry(entry1);
+                        byte[] buffer = new byte[fis.available()];
+                        fis.read(buffer);
+                        zip.write(buffer);
+                        zip.closeEntry();
+                        fis.close();
+                        Files.delete(Paths.get(pathFileToZip));
+                    }  catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
             e.printStackTrace();
         }
     }
