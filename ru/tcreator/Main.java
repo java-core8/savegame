@@ -1,18 +1,27 @@
 package ru.tcreator;
 
 import java.io.*;
+import java.util.zip.*;
 import java.util.ArrayList;
 
 public class Main {
-    static final String ROOT_PATH = "/home/azathoth/project/java/Games/";
+    static final String ROOT_PATH = (!System.getProperty("os.name").equals("Windows 10"))
+            ? "/home/azathoth/project/java/Games/"
+            : "C:\\Users\\m.tuypina\\IdeaProjects\\savegame\\ru\\tcreator\\";
+    static final char SEPARATOR = File.separatorChar;
     public static void main(String[] args) throws IOException {
         GameProgress oneSaveProgress = new GameProgress(99, 23, 20, 2.23);
         GameProgress twoSaveProgress = new GameProgress(67, 29, 28,4.23);
-        GameProgress threeSaveProgress = new GameProgress(99, 231, 90,900.23);
-        String pathSaveProgress = ROOT_PATH + "savegames/";
+        GameProgress threeSaveProgress = new GameProgress(99, 231, 90, 900.23);
+        String pathSaveProgress = ROOT_PATH + "savegames" + SEPARATOR;
+
+        System.out.println(pathSaveProgress);
+
         saveGame(pathSaveProgress, oneSaveProgress);
-        saveGame(pathSaveProgress, twoSaveProgress);
-        saveGame(pathSaveProgress, threeSaveProgress);
+//        saveGame(pathSaveProgress, twoSaveProgress);
+//        saveGame(pathSaveProgress, threeSaveProgress);
+
+//        zipFiles(pathSaveProgress, pathSaveProgress + "output.zip");
     }
 
     static public void saveGame(String path, GameProgress progress) throws IOException {
@@ -62,7 +71,15 @@ public class Main {
                 .get() + 1;
     }
 
-    public static void zipFiles(String path, String pathToZip) {
+    public static void zipFiles(String pathFiles, String pathToZip) {
+        try(ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(pathToZip));
+            FileInputStream fis = new FileInputStream(pathFiles)) {
+//            ZipEntry entry1 = new ZipEntry();
 
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

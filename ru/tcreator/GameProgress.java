@@ -1,4 +1,5 @@
 package ru.tcreator;
+
 import java.io.Serializable;
 
 public class GameProgress implements Serializable {
